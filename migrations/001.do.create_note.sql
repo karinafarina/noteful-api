@@ -4,3 +4,4 @@ CREATE TABLE noteful_notes (
   title TEXT NOT NULL,
   content TEXT
 );
+

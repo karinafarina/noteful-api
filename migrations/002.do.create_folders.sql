@@ -3,6 +3,6 @@ CREATE TABLE noteful_folders (
   title TEXT NOT NULL
 );
 
-ALTER TABLE noteful_notes
+ALTER TABLE noteful_notes 
   ADD COLUMN
     folder_id INTEGER REFERENCES noteful_folders(id) ON DELETE CASCADE NOT NULL;

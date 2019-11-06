@@ -1,4 +1,4 @@
-INSERT INTO noteful_notes (title, folder_Id, content)
+INSERT INTO noteful_notes (title, folder_id, content)
 VALUES
   ('Dogs', 1, 'Cum sed ab est harum tenetur. Minima voluptate veritatis voluptatem accusamus. Similique nisi nesciunt deserunt odio. Officiis itaque iure culpa laudantium quia. Ea ea accusamus quam dolores enim officiis voluptates minima. Distinctio consequatur est nihil aliquam suscipit est. Delectus facere aspernatur labore aut doloribus deserunt deleniti quia. Sequi recusandae rerum sed. Perspiciatis dolores et reprehenderit nostrum nostrum et perspiciatis alias. Fugit explicabo architecto dolor rem ut fugit tempora. Dolorum fuga sed minima ducimus natus. Consequatur rerum vitae. Amet dolor enim autem qui in sint vel voluptatem.'),
 
