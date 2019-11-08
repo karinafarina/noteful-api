@@ -81,9 +81,9 @@ describe('Notes Endpoints', function() {
       })
     })
   })
-  describe.only(`GET /api/notes/:note_id`, () => {
+  describe(`GET /api/notes/:note_id`, () => {
     
-    context(`Given no notes`, () => {
+    context(`Given no note`, () => {
       it(`responds with 404`, () => {
         const noteId = 123456;
         return supertest(app)
@@ -91,31 +91,66 @@ describe('Notes Endpoints', function() {
           .expect(404, { error: { message: `Note does not exist` } })
       })
     })
-    // context('Given there are notes in the database', () => {
-    //   conts testFolder = makeFoldersArray();
-    //   const testNote = makeNotesArray();
+    context('Given there are notes in the database', () => {
+      const testFolder = makeFoldersArray();
+      const testNote = makeNotesArray();
 
-    //   beforeEach('insert note', () => {
-    //     return db
-    //       .into('noteful_folder')
-    //       .insert(testFolder)
-    //       .then(() => {
-    //         return db
-    //           .into('noteful_note')
-    //           .insert(testNote)
-    //       })
-    //   })
-    //   it('responds with 200 and the specified note', () => {
-    //     const noteId = 2;
-    //     const expectedNote = testNote[noteId - 1];
-    //     return supertest(app)
-    //       .get(`/api/notes/${noteId}`)
-    //       .expect(res => {
-    //         expect(res.body.name).to.eql(expectedNote.name);
-    //         expect(res.blody).to.have.property('id')
-    //       })
-    //   })
-    // })
+      beforeEach('insert note', () => {
+        return db
+          .into('noteful_folders')
+          .insert(testFolder)
+          .then(() => {
+            return db
+              .into('noteful_notes')
+              .insert(testNote)
+          })
+      })
+      it('responds with 200 and the specified note', () => {
+        const noteId = 2;
+        const expectedNote = testNote[noteId - 1];
+        return supertest(app)
+          .get(`/api/notes/${noteId}`)
+          .expect(res => {
+            expect(res.body.title).to.eql(expectedNote.title);
+            expect(res.body).to.have.property('id')
+          })
+      })
+    })
   })
 
+  describe.only(`POST /api/notes`, () => {
+    const testFolder = makeFoldersArray();
+    const testNote = makeNotesArray();
+
+    beforeEach('insert related folder', () => {
+      return db
+        .into('noteful_folders')
+        .insert(testFolder)
+    })
+    it(`creates a note, respnding with 201 and the new note`, function() {
+      const newNote = {
+        title: 'Test new nte',
+        folder_id: '1',
+        content: 'test content'
+      }
+      //this.retries(3)
+      return supertest(app)
+        .post('/api/notes')
+        .send(newNote)
+        .expect(201)
+        .expect(res => {
+          expect(res.body.title).to.eql(newNote.title)
+          expect(res.body.folder_id).to.eql(newNote.folder_id)
+          expect(res.body.content).to.eql(newNote.content)
+          expect(res.body).to.have.property('id')
+          expect(res.headers.location).to.eql(`/api/notes/${res.body.id}`)
+        })
+        .then(res => 
+          supertest(app)
+            .get(`/api/notes/${res.body.id}`)
+            .expect(res.body)
+          )
+    })
+    
+  })
 })
