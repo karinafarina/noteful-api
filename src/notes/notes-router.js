@@ -25,11 +25,41 @@ notesRouter
       })
       .catch(next)
   })
+  .post(jsonParser, (req, res, next) => {
+    const { title, folder_id, content } = req.body
+    const newNote = { title, folder_id, content }
+    console.log('NEWNOTE', newNote)
+    //const knexInstance = req.app.get('db')
+
+    for (const [key, value] of Object.entries(newNote))
+      if (value == null)
+        return res.status(400).json({
+          error: { message: `Missing '${key}' in request body` }
+        })
+    newNote.folder_id = folder_id
+
+    NotesService.insertNote(
+      req.app.get('db'),
+      newNote
+    )
+      .then(note => {
+        // logger.info({
+        //   message: `Note with id ${note.id} created.`,
+        //   request: `${req.originalUrl}`,
+        //   method: `${req.methon}`,
+        //   ip: `${req.if}`
+        // })
+        res
+          .status(201)
+          .location(path.posix.join(req.originalUrl, `/${note.id}`))
+          .json(serializeNote(note))
+      })
+      .catch(next)
+  })
 
   notesRouter
     .route('/:note_id')
     .all((req, res, next) => {
-      console.log('res.note', res)
       NotesService.getById(
         req.app.get('db'),
         req.params.note_id,
@@ -48,36 +78,7 @@ notesRouter
     .get((req, res, next) => {
       res.json(serializeNote(res.note))
     })
-    .post(jsonParser, (req, res, next) => {
-      const { title, content } = req.body
-      const newNote = { title, content }
-      console.log('NEWNOTE',newNote)
-      //const knexInstance = req.app.get('db')
-
-      for(const [key, value] of Object.entries(newNote))
-        if (value == null)
-          return res.status(400).json({
-            error: { message: `Missing '${key}' in request body`}
-          })
-          //newNote.folder_id = folder_id
-          NotesService.insertNote(
-            req.app.get('db'),
-            newNote
-            )
-            .then(note => {
-              // logger.info({
-              //   message: `Note with id ${note.id} created.`,
-              //   request: `${req.originalUrl}`,
-              //   method: `${req.methon}`,
-              //   ip: `${req.if}`
-              // })
-              res
-                .status(201)
-                .location(path.posix.join(req.originalUrl, `/${note.id}`))
-                .json(serializeNote(note))
-            })
-            .catch(next)
-    })
+    
 
 module.exports = notesRouter
 

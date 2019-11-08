@@ -73,8 +73,6 @@ describe('Notes Endpoints', function() {
           .get(`/api/notes`)
           .expect(200)
           .expect(res => {
-            console.log('response', res.body[0].title)
-            console.log('expected response', expectedNote.title)
             expect(res.body[0].title).to.eql(expectedNote.title)
             expect(res.body[0].content).to.eql(expectedNote.content)
           })
@@ -130,7 +128,7 @@ describe('Notes Endpoints', function() {
     it(`creates a note, respnding with 201 and the new note`, function() {
       const newNote = {
         title: 'Test new nte',
-        folder_id: '1',
+        folder_id: 1,
         content: 'test content'
       }
       //this.retries(3)
