@@ -53,38 +53,69 @@ describe('Notes Endpoints', function() {
           .get('/api/notes')
           .expect(200, testNotes)
       })
-
-      context(`Given an XSS attack note`, () => {
-        //const testNotes = makeNotesArray();
-        const testFolders = makeFoldersArray();
-        const { maliciousNote, expectedNote } = makeMaliciousNote();
-        console.log('maliciousnogte: ', maliciousNote)
-                
-        beforeEach('insert malicious note', () => {
-          return db
-            .into('noteful_folders')
-            .insert(testFolders)
-            .then(() => {
-              return db
-                .into('noteful_notes')
-                .insert([ maliciousNote ])
-            })
-        })
-        it.only('removes XSS attack content', () => {
-          return supertest(app)
-            .get(`/api/notes`)
-            .expect(200)
-            .expect(res => {
-              console.log('response', res.body[0].title)
-              console.log('expected response', expectedNote)
-              expect(res.body[0].title).to.eql(expectedNote.title)
-              expect(res.body[0].content).to.eql(expectedNote.content)
-            })
-        })
+    })
+    context(`Given an XSS attack note`, () => {
+      const testFolders = makeFoldersArray();
+      const { maliciousNote, expectedNote } = makeMaliciousNote();
+              
+      beforeEach('insert malicious note', () => {
+        return db
+          .into('noteful_folders')
+          .insert(testFolders)
+          .then(() => {
+            return db
+              .into('noteful_notes')
+              .insert([ maliciousNote ])
+          })
       })
-      
+      it('removes XSS attack content', () => {
+        return supertest(app)
+          .get(`/api/notes`)
+          .expect(200)
+          .expect(res => {
+            console.log('response', res.body[0].title)
+            console.log('expected response', expectedNote.title)
+            expect(res.body[0].title).to.eql(expectedNote.title)
+            expect(res.body[0].content).to.eql(expectedNote.content)
+          })
+      })
     })
   })
+  describe.only(`GET /api/notes/:note_id`, () => {
+    
+    context(`Given no notes`, () => {
+      it(`responds with 404`, () => {
+        const noteId = 123456;
+        return supertest(app)
+          .get(`/api/notes/${noteId}`)
+          .expect(404, { error: { message: `Note does not exist` } })
+      })
+    })
+    // context('Given there are notes in the database', () => {
+    //   conts testFolder = makeFoldersArray();
+    //   const testNote = makeNotesArray();
 
+    //   beforeEach('insert note', () => {
+    //     return db
+    //       .into('noteful_folder')
+    //       .insert(testFolder)
+    //       .then(() => {
+    //         return db
+    //           .into('noteful_note')
+    //           .insert(testNote)
+    //       })
+    //   })
+    //   it('responds with 200 and the specified note', () => {
+    //     const noteId = 2;
+    //     const expectedNote = testNote[noteId - 1];
+    //     return supertest(app)
+    //       .get(`/api/notes/${noteId}`)
+    //       .expect(res => {
+    //         expect(res.body.name).to.eql(expectedNote.name);
+    //         expect(res.blody).to.have.property('id')
+    //       })
+    //   })
+    // })
+  })
 
 })
