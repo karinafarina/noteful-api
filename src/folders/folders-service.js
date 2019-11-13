@@ -13,23 +13,25 @@ const FoldersService = {
       });
   },
 
-  getById(knex, id) {
+  getById(knex, folder_id) {
+
     return knex
       .from('noteful_folders')
       .select('*')
-      .where('id', id)
+      .where('id', parseInt(folder_id, 10))
       .first()
   },
 
-  deleteFolder(knex, id) {
+  deleteFolder(knex, folder_id) {
+    console.log('folder_id', folder_id)
     return knex('noteful_folders')
-      .where({ id })
+      .where({ folder_id })
       .delete()
   },
 
-  updateFolder(knex, id, newFolderFields) {
+  updateFolder(knex, folder_id, newFolderFields) {
     return knex('noteful_folders')
-      .where({ id })
+      .where({ folder_id })
       .update(newFolderFields)
   }
 }

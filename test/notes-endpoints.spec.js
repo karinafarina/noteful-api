@@ -116,7 +116,7 @@ describe('Notes Endpoints', function() {
     })
   })
 
-  describe.only(`POST /api/notes`, () => {
+  describe(`POST /api/notes`, () => {
     const testFolder = makeFoldersArray();
     const testNote = makeNotesArray();
 
@@ -127,7 +127,7 @@ describe('Notes Endpoints', function() {
     })
     it(`creates a note, respnding with 201 and the new note`, function() {
       const newNote = {
-        title: 'Test new nte',
+        title: 'Test new note',
         folder_id: 1,
         content: 'test content'
       }
@@ -142,6 +142,9 @@ describe('Notes Endpoints', function() {
           expect(res.body.content).to.eql(newNote.content)
           expect(res.body).to.have.property('id')
           expect(res.headers.location).to.eql(`/api/notes/${res.body.id}`)
+          const expected = new Date().toLocaleDateString()
+          const actual = new Date(res.body.date_published).toLocaleDateString()
+          expect(actual).to.eql(expected)
         })
         .then(res => 
           supertest(app)
@@ -149,6 +152,130 @@ describe('Notes Endpoints', function() {
             .expect(res.body)
           )
     })
-    
+
+    const requiredFields = ['title', 'folder_id', 'content']
+
+    requiredFields.forEach(field => {
+      const newNote = {
+        title: 'Test new title',
+        folder_id: "Test new folder_id",
+        content: 'Test new content'
+      }
+
+      it(`responds with 400 and an error message when the '${field}' is missing`, () => {
+        delete newNote[field]
+
+        return supertest(app)
+        .post('/api/notes')
+        .send(newNote)
+        .expect(400, {
+          error: { message: `Missing '${field}' in request body` }
+        })
+      })
+    })
+    it('removes XSS attack content from response', () => {
+      const { maliciousNote, expectedNote } = makeMaliciousNote()
+      return supertest(app)
+        .post(`/api/notes`)
+        .send(maliciousNote)
+        .expect(201)
+        .expect(res => {
+          expect(res.body.title).to.eql(expectedNote.title)
+          expect(res.body.folder_id).to.eql(expectedNote.folder_id)
+          expect(res.body.content).to.eql(expectedNote.content)
+        })
+    })
   })
+
+  describe(`DELETE /api/notes/:note_id`, () => {
+    context(`Given not notes`, () => {
+      it(`responds with 404`, () => {
+        const noteId = 123456
+        return supertest(app)
+          .delete(`/api/notes/${noteId}`)
+          .expect(404, { error: { message: `Note does not exist`} })
+      })
+    })
+    context(`Given there are notes in the database`, () => {
+      const testNotes = makeNotesArray()
+      const testFolders = makeFoldersArray()
+
+      beforeEach(`insert notes`, () => {
+        return db
+          .into('noteful_folders')
+          .insert(testFolders)
+          .then(() => {
+            return db
+              .into('noteful_notes')
+              .insert(testNotes)
+          })
+      })
+      it('responds with 204 and removes the note', () => {
+        const idToRemove = 2
+        const expectedNote = testNotes.filter(note => note.id !== idToRemove)
+        
+        return supertest(app)
+          .delete(`/api/notes/${idToRemove}`)
+          .expect(204)
+          .then(res =>  
+            supertest(app)
+              .get(`/api/notes`)
+              .expect(res => {
+                expect(expectedNote)
+              })
+            )
+      })
+    })
+  })
+
+  describe('PATCH /api/notes/:note_id', () => {
+    context(`Given not notes`, () => {
+      it(`responds with 404`, () => {
+        const noteId = 123456
+        return supertest(app)
+          .delete(`/api/notes/${noteId}`)
+          .expect(404, { error: { message: `Note does not exist`} })
+      })
+    })
+
+    context(`Given there are articles in the database`, () => {
+      const testNotes = makeNotesArray()
+      const testFolders = makeFoldersArray()
+
+      beforeEach('insert notes', () => {
+        return db
+          .into('noteful_folders')
+          .insert(testFolders)
+          .then(() => {
+            return db
+              .into('noteful_notes')
+              .insert(testNotes)
+          })
+      })
+
+      it(`responds with 204 and updates the note`, () => {
+        const idToUpdate = 2
+        const updateNote = {
+          title: 'updated note title',
+          folder_id: 1,
+          content: 'updated content'
+        }
+        const expectedNote = {
+          ...testNotes[idToUpdate - 1],
+          ...updateNote
+        }
+        return supertest(app)
+          .patch(`/api/notes/${idToUpdate}`)
+          .send(updateNote)
+          .expect(204)
+          .then(res => 
+            supertest(app)
+              .get(`/api/notes/${idToUpdate}`)
+              .expect(expectedNote)
+            )
+      })
+    })
+
+  })
+
 })

@@ -28,7 +28,6 @@ notesRouter
   .post(jsonParser, (req, res, next) => {
     const { title, folder_id, content } = req.body
     const newNote = { title, folder_id, content }
-    console.log('NEWNOTE', newNote)
     //const knexInstance = req.app.get('db')
 
     for (const [key, value] of Object.entries(newNote))
@@ -36,6 +35,7 @@ notesRouter
         return res.status(400).json({
           error: { message: `Missing '${key}' in request body` }
         })
+      //ASK JEREMY ABOUT THIS
     newNote.folder_id = folder_id
 
     NotesService.insertNote(
@@ -43,12 +43,6 @@ notesRouter
       newNote
     )
       .then(note => {
-        // logger.info({
-        //   message: `Note with id ${note.id} created.`,
-        //   request: `${req.originalUrl}`,
-        //   method: `${req.methon}`,
-        //   ip: `${req.if}`
-        // })
         res
           .status(201)
           .location(path.posix.join(req.originalUrl, `/${note.id}`))
@@ -77,6 +71,39 @@ notesRouter
     })
     .get((req, res, next) => {
       res.json(serializeNote(res.note))
+    })
+    .delete((req, res, next) => {
+      NotesService.deleteNote(
+        req.app.get('db'),
+        req.params.note_id
+      )
+      .then(numRowsAffected => {
+        res.status(204).end()
+      })
+      .catch(next)
+    })
+    .patch(jsonParser, (req, res, next) => {
+      const { title, folder_id, content } = req.body
+      const noteToUpdate = { title, folder_id, content }
+      console.log('folder id: ', folder_id)
+
+      const numberOfValues = Object.values(noteToUpdate).filter(Boolean).length
+      if (numberOfValues === 0)
+        return res.status(400).json({
+          error: {
+            message: `Request body must contain either 'title', 'folder_id', or 'content'`
+          }
+        })
+      console.log('Request body is: ', req.params.note_id)
+        NotesService.updateNote(
+          req.app.get('db'),
+          req.params.note_id,
+          noteToUpdate
+        )
+        .then(numRowsAffected => {
+          res.status(204).end()
+        })
+        .catch(next)
     })
     
 

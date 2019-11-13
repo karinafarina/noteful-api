@@ -25,6 +25,7 @@
     "logger": "0.0.1",
     "mocha": "^6.2.1",
     "morgan": "^1.9.1",
+    "npm-check-updates": "^3.2.1",
     "pg": "^7.12.1",
     "supertest": "^4.0.2",
     "xss": "^1.0.6"
