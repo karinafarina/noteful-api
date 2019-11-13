@@ -9,6 +9,7 @@ const FoldersService = {
       .into('noteful_folders')
       .returning('*')
       .then(rows => {
+        console.log('rows', rows)
         return rows[0]
       });
   },
@@ -29,9 +30,9 @@ const FoldersService = {
       .delete()
   },
 
-  updateFolder(knex, folder_id, newFolderFields) {
+  updateFolder(knex, id, newFolderFields) {
     return knex('noteful_folders')
-      .where({ folder_id })
+      .where({ id })
       .update(newFolderFields)
   }
 }

@@ -172,7 +172,7 @@ describe('Folder Endpoints', function() {
     });
   })
 
-  describe.only(`DELETE /api/folders/:folder_id`, () => {
+  describe(`DELETE /api/folders/:folder_id`, () => {
     context(`Given no folder`, () => {
       it(`responds with 404`, () => {
         const folder_id = 123456;
@@ -191,7 +191,7 @@ describe('Folder Endpoints', function() {
           .insert(testFolder);
       })
 
-      it.only('responds with 204 and removes the folder', () => {
+      it('responds with 204 and removes the folder', () => {
         const idToRemove = 2
         const expectedFolder = testFolder.filter(folder => folder.id !== idToRemove)
         return supertest(app)
@@ -202,7 +202,86 @@ describe('Folder Endpoints', function() {
               .get(`/api/folders`)
               .expect(expectedFolder)
           )
+          .catch(error => console.log(error))
       })
     })
   })
+
+  describe(`PATCH /api/folders/:folder_id`, () => {
+    context(`Given no folders`, () => {
+      it(`responds with 404`, () => {
+        const FolderId = 123456
+        return supertest(app)
+          .delete(`/api/folders/${FolderId}`)
+          .expect(404, { error: { message: `Folder Not Found` } })
+      })
+    })
+
+    context('Given there are folders in the database', () => {
+      const testFolders = makeFoldersArray()
+
+      beforeEach('insert folders', () => {
+        return db
+          .into('noteful_folders')
+          .insert(testFolders)
+      })
+
+      it('responds with 204 and updates the folder', () => {
+        const idToUpdate = 2
+        const updateFolder = {
+          title: 'updated folder title',
+        }
+        const expectedFolder = {
+          ...testFolders[idToUpdate - 1],
+          ...updateFolder
+        }
+        return supertest(app)
+          .patch(`/api/folders/${idToUpdate}`)
+          .send(updateFolder)
+          .expect(204)
+          .then(res =>
+            supertest(app)
+              .get(`/api/folders/${idToUpdate}`)
+              .expect(expectedFolder)
+          )
+      })
+
+      it(`responds with 400 when no required fields supplied`, () => {
+        const idToUpdate = 2
+        return supertest(app)
+          .patch(`/api/folders/${idToUpdate}`)
+          .send({ irrelevantField: 'foo' })
+          .expect(400, {
+            error: {
+              message: `Request body must contain either, 'title', 'folder_id', or 'content'`
+            }
+          })
+      })
+
+      it(`responds with 204 when updating only a subset of fields`, () => {
+        const idToUpdate = 2
+        const updateFolder = {
+          title: 'updated folder title',
+        }
+        const expectedFolder = {
+          ...testFolders[idToUpdate - 1],
+          ...updateFolder
+        }
+
+        return supertest(app)
+          .patch(`/api/folders/${idToUpdate}`)
+          .send({
+            ...updateFolder,
+            fieldToIgnore: 'should not be in GET response'
+          })
+          .expect(204)
+          .then(res =>
+            supertest(app)
+              .get(`/api/folders/${idToUpdate}`)
+              .expect(expectedFolder)
+          )
+      })
+    })
+  })
+
 })

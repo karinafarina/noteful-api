@@ -16,6 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bluebird": "^3.7.1",
     "chai": "^4.2.0",
     "cors": "^2.8.5",
     "dotenv": "^8.1.0",

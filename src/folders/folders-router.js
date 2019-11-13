@@ -70,19 +70,32 @@ foldersRouter
     const knexInstance = req.app.get('db');
     FoldersService.deleteFolder(knexInstance, folder_id)
       .then(numRowsAffected => {
-        // logger.info({
-        //   message: `Folder with id ${folder_id} deleted.`,
-        //   request: `${req.originalUrl}`,
-        //   method: `${req.method}`,
-        //   ip: `${req.ip}`
-        // })
-
-        //need to send back message instead of .end()
-        res.status(204).json({
-          message: true
-        });
+        res.status(204).end
       })
       .catch(next)
+  })
+  .patch(jsonParser, (req, res, next) => {
+    const { title, folder_id, content } = req.body
+    const folderToUpdate = { title, folder_id, content }
+
+    const numberOfValues = Object.values(folderToUpdate).filter(Boolean).length
+    if(numberOfValues === 0)
+      return res.status(400).json({
+        error: {
+          message: `Request body must contain either, 'title', 'folder_id', or 'content'`
+        }
+      })
+
+      FoldersService.updateFolder(
+        req.app.get('db'),
+        req.params.folder_id,
+        folderToUpdate
+      )
+        .then(numRowsAffected => {
+          console.log('numrows affected', numRowsAffected)
+          res.status(204).end()
+        })
+        .catch(next)
   })
   
 
