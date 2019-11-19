@@ -8,7 +8,7 @@ describe('Folder Endpoints', function() {
   before('make knex instance', () => {
     db = knex({
       client: 'pg',
-      connection: process.env.TEST_DB_URL,
+      connection: process.env.TEST_DATABASE_URL,
     })
     app.set('db', db)
   })
@@ -207,7 +207,7 @@ describe('Folder Endpoints', function() {
     })
   })
 
-  describe(`PATCH /api/folders/:folder_id`, () => {
+  describe.only(`PATCH /api/folders/:folder_id`, () => {
     context(`Given no folders`, () => {
       it(`responds with 404`, () => {
         const FolderId = 123456
@@ -253,7 +253,7 @@ describe('Folder Endpoints', function() {
           .send({ irrelevantField: 'foo' })
           .expect(400, {
             error: {
-              message: `Request body must contain either, 'title', 'folder_id', or 'content'`
+              message: `Request body must contain either, 'title'`
             }
           })
       })

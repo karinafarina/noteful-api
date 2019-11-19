@@ -37,6 +37,7 @@ foldersRouter
       newFolder
     )
       .then(folder => {
+        console.log('req.originalUrl', req.originalUrl)
         res
           .status(201)
           .location(path.posix.join(req.originalUrl, `/${folder.id}`))
@@ -75,14 +76,14 @@ foldersRouter
       .catch(next)
   })
   .patch(jsonParser, (req, res, next) => {
-    const { title, folder_id, content } = req.body
-    const folderToUpdate = { title, folder_id, content }
+    const { title } = req.body
+    const folderToUpdate = { title }
 
     const numberOfValues = Object.values(folderToUpdate).filter(Boolean).length
     if(numberOfValues === 0)
       return res.status(400).json({
         error: {
-          message: `Request body must contain either, 'title', 'folder_id', or 'content'`
+          message: `Request body must contain either, 'title'`
         }
       })
 

@@ -10,7 +10,7 @@ describe('Notes Endpoints', function() {
   before('make knex instance', () => {
     db = knex({
       client: 'pg',
-      connection: process.env.TEST_DB_URL,
+      connection: process.env.TEST_DATABASE_URL,
     })
     app.set('db', db)
   })
@@ -79,7 +79,7 @@ describe('Notes Endpoints', function() {
       })
     })
   })
-  describe(`GET /api/notes/:note_id`, () => {
+  describe(`GET /api/notes/:noteId`, () => {
     
     context(`Given no note`, () => {
       it(`responds with 404`, () => {
@@ -187,7 +187,7 @@ describe('Notes Endpoints', function() {
     })
   })
 
-  describe(`DELETE /api/notes/:note_id`, () => {
+  describe(`DELETE /api/notes/:noteId`, () => {
     context(`Given not notes`, () => {
       it(`responds with 404`, () => {
         const noteId = 123456
@@ -228,7 +228,7 @@ describe('Notes Endpoints', function() {
     })
   })
 
-  describe('PATCH /api/notes/:note_id', () => {
+  describe('PATCH /api/notes/:noteId', () => {
     context(`Given not notes`, () => {
       it(`responds with 404`, () => {
         const noteId = 123456
